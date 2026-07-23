@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "objectives": {
+    "forestType": "mixed",
+    "densityPerM2": 3
+  },
+  "recommendations": [
+    { "speciesId": "ficus-religiosa", "qty": 40, "layer": "canopy" }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miyawaki-forest-planner/schemas/plan.schema.json",
+  "title": "PlanV1",
+  "type": "object",
+  "required": ["schemaVersion", "site", "objectives", "recommendations"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "site": {
+      "type": "object",
+      "required": ["areaM2", "region", "sunlight", "water"],
+      "properties": {
+        "areaM2": { "type": "number", "exclusiveMinimum": 0 },
+        "region": { "type": "string", "minLength": 1 },
+        "sunlight": { "enum": ["full", "partial", "shade"] },
+        "water": { "enum": ["low", "medium", "high"] }
+      },
+      "additionalProperties": false
+    },
+    "objectives": {
+      "type": "object",
+      "required": ["forestType", "densityPerM2"],
+      "properties": {
+        "forestType": { "type": "string", "minLength": 1 },
+        "densityPerM2": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["speciesId", "qty", "layer"],
+        "properties": {
+          "speciesId": { "type": "string", "minLength": 1 },
+          "qty": { "type": "integer", "minimum": 1 },
+          "layer": { "enum": ["canopy", "subcanopy", "shrub", "ground"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

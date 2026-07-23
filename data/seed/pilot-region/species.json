@@ -1,0 +1,28 @@
+[
+  {
+    "id": "ficus-religiosa",
+    "commonName": "Peepal",
+    "scientificName": "Ficus religiosa",
+    "nativeRegions": ["IN-TN"],
+    "forestLayers": ["canopy"],
+    "siteFit": {
+      "sunlight": "full",
+      "water": "medium"
+    },
+    "ecologicalRoles": ["shade", "pollinator-support"],
+    "isInvasiveRisk": false
+  },
+  {
+    "id": "murraya-koenigii",
+    "commonName": "Curry Leaf",
+    "scientificName": "Murraya koenigii",
+    "nativeRegions": ["IN-TN"],
+    "forestLayers": ["shrub"],
+    "siteFit": {
+      "sunlight": "partial",
+      "water": "medium"
+    },
+    "ecologicalRoles": ["food", "pollinator-support"],
+    "isInvasiveRisk": false
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miyawaki-forest-planner/schemas/species.schema.json",
+  "title": "Species",
+  "type": "object",
+  "required": [
+    "id",
+    "commonName",
+    "scientificName",
+    "nativeRegions",
+    "forestLayers",
+    "siteFit",
+    "ecologicalRoles"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "commonName": { "type": "string", "minLength": 1 },
+    "scientificName": { "type": "string", "minLength": 1 },
+    "nativeRegions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "forestLayers": {
+      "type": "array",
+      "items": { "enum": ["canopy", "subcanopy", "shrub", "ground"] },
+      "minItems": 1
+    },
+    "siteFit": {
+      "type": "object",
+      "required": ["sunlight", "water"],
+      "properties": {
+        "sunlight": { "enum": ["full", "partial", "shade"] },
+        "water": { "enum": ["low", "medium", "high"] }
+      },
+      "additionalProperties": false
+    },
+    "ecologicalRoles": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "isInvasiveRisk": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

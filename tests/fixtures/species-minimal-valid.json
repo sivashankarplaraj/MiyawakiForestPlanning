@@ -1,0 +1,13 @@
+{
+  "id": "ficus-religiosa",
+  "commonName": "Peepal",
+  "scientificName": "Ficus religiosa",
+  "nativeRegions": ["IN-TN"],
+  "forestLayers": ["canopy"],
+  "siteFit": {
+    "sunlight": "full",
+    "water": "medium"
+  },
+  "ecologicalRoles": ["shade", "pollinator-support"],
+  "isInvasiveRisk": false
+}

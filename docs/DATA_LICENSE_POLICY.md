@@ -49,3 +49,13 @@ All exported plans and docs that include third-party-derived data should include
 ## Compliance warning
 
 Do not merge external data files into main branches without license compatibility review.
+
+## Pilot region metadata contract
+
+For `data/seed/pilot-region/metadata.json`, include:
+
+- `region`
+- `source`
+- `license`
+- `lastUpdated`
+- optional `notes`

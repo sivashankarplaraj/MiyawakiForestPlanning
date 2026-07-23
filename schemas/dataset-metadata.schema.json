@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miyawaki-forest-planner/schemas/dataset-metadata.schema.json",
+  "title": "DatasetMetadata",
+  "type": "object",
+  "required": ["region", "source", "license", "lastUpdated"],
+  "properties": {
+    "region": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "license": { "type": "string", "minLength": 1 },
+    "lastUpdated": { "type": "string", "format": "date" },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}
