@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
@@ -14,6 +14,16 @@ const forestTypeOptions: Array<{ value: ForestType; label: string }> = [
   { value: "wildlife", label: "Bird and Wildlife Forest" },
   { value: "climate_resilience", label: "Climate-Resilience Forest" }
 ];
+
+const defaultInput: PlanInput = {
+  areaM2: 100,
+  densityPerM2: 3,
+  forestType: "mixed",
+  sunlight: "full_sun",
+  waterAvailability: "medium"
+};
+
+const draftStorageKey = "miyawaki-plan-input-v1";
 
 export default function App() {
   const pilotMetadata = useMemo(() => getPilotMetadata(), []);
@@ -31,17 +41,32 @@ export default function App() {
   }, []);
 
   const [input, setInput] = useState<PlanInput>({
-    areaM2: 100,
-    densityPerM2: 3,
-    forestType: "mixed",
-    sunlight: "full_sun",
-    waterAvailability: "medium"
+    ...defaultInput
   });
 
   const [generatedAt, setGeneratedAt] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
 
   const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
+
+  useEffect(() => {
+    const savedDraft = window.localStorage.getItem(draftStorageKey);
+    if (!savedDraft) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(savedDraft) as PlanInput;
+      setInput(parsed);
+      setStatusMessage("Restored your last local draft inputs.");
+    } catch {
+      window.localStorage.removeItem(draftStorageKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(draftStorageKey, JSON.stringify(input));
+  }, [input]);
 
   function downloadPlan() {
     const document = createPlanDocument(input, plan, pilotMetadata.region);
@@ -76,6 +101,13 @@ export default function App() {
     } finally {
       event.target.value = "";
     }
+  }
+
+  function resetDraft() {
+    setInput(defaultInput);
+    setGeneratedAt("");
+    window.localStorage.removeItem(draftStorageKey);
+    setStatusMessage("Draft reset to default inputs.");
   }
 
   return (
@@ -167,6 +199,9 @@ export default function App() {
           </button>
           <button className="secondary" onClick={downloadPlan}>
             Export Plan JSON
+          </button>
+          <button className="secondary" onClick={resetDraft}>
+            Reset Inputs
           </button>
           <label className="import-label">
             Load Plan JSON
