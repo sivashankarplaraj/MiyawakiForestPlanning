@@ -6,6 +6,7 @@ import { buildMaintenanceGuidance } from "./lib/guidance";
 import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
+import { getPresetById, scenarioPresets } from "./lib/presets";
 import type { ForestType, PlanInput } from "./types";
 
 const forestTypeOptions: Array<{ value: ForestType; label: string }> = [
@@ -199,6 +200,17 @@ export default function App() {
     setStatusMessage("Draft reset to default inputs.");
   }
 
+  function applyPreset(presetId: string) {
+    const preset = getPresetById(presetId);
+    if (!preset) {
+      return;
+    }
+
+    setInput(preset.input);
+    setGeneratedAt(new Date().toLocaleString());
+    setStatusMessage(`Preset applied: ${preset.label}`);
+  }
+
   return (
     <div className="page">
       <header className="hero">
@@ -215,6 +227,14 @@ export default function App() {
 
       <section className="card controls">
         <h2>Site Inputs</h2>
+        <div className="preset-row" aria-label="Scenario presets">
+          {scenarioPresets.map((preset) => (
+            <button key={preset.id} className="preset-button" onClick={() => applyPreset(preset.id)} title={preset.description}>
+              <span>{preset.label}</span>
+              <small>{preset.description}</small>
+            </button>
+          ))}
+        </div>
         <div className="grid">
           <label>
             Plot Area (m2)

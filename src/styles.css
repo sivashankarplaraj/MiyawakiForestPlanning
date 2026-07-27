@@ -50,6 +50,39 @@ body {
   gap: 12px;
 }
 
+.preset-row {
+  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.preset-button {
+  border: 1px solid #8cab75;
+  background: #eef8e3;
+  color: #1f4628;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+  display: grid;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.preset-button:hover {
+  background: #e4f3d4;
+  border-color: #73985a;
+}
+
+.preset-button span {
+  font-weight: 700;
+}
+
+.preset-button small {
+  color: #446444;
+  font-size: 0.8rem;
+}
+
 label {
   display: grid;
   gap: 6px;

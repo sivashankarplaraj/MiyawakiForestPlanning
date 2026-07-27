@@ -117,10 +117,11 @@ Current repository defaults:
 4. Open the local URL shown by Vite in your terminal
 5. Adjust area, density, forest type, sunlight, and water inputs
 6. Click Generate / Refresh Plan to demo species mix and growth preview
-7. Export a schema-aligned plan JSON and re-load it using Load Plan JSON
-8. Export a printable plan summary PDF
-9. Export simple planting layout files as GeoJSON or SVG
-10. Review the in-app layout preview before exporting layout artifacts
+7. Use scenario presets (School Campus, Roadside Strip, Community Fruit Grove) for one-click setup
+8. Export a schema-aligned plan JSON and re-load it using Load Plan JSON
+9. Export a printable plan summary PDF
+10. Export simple planting layout files as GeoJSON or SVG
+11. Review the in-app layout preview before exporting layout artifacts
 
 Build check:
 
