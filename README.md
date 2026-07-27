@@ -2,6 +2,8 @@
 
 An open-source, local-first web application to design small, dense, biodiverse Miyawaki-style native forests.
 
+**Live app:** https://sivashankarplaraj.github.io/MiyawakiForestPlanning/
+
 ## Why this project exists
 
 Communities, schools, NGOs, and local councils want to restore biodiversity with practical pocket forests, but planning is fragmented across spreadsheets, local species lists, maps, and field notes. This project unifies those steps into a single static web application that runs in the browser without requiring accounts or a backend.
@@ -130,6 +132,14 @@ Build check:
 
 - npm run build
 
+## Deployment
+
+The app deploys automatically to GitHub Pages from `main` via `.github/workflows/deploy-pages.yml`.
+
+- Live URL: https://sivashankarplaraj.github.io/MiyawakiForestPlanning/
+- One-time setup: in repository Settings -> Pages, set Source to "GitHub Actions"
+- Local production preview: `npm run build` then `npm run preview`
+
 ## Contribution highlights
 
 - Help add validated native species records by region
@@ -143,7 +153,7 @@ This tool supports planning decisions and community action, but it does not repl
 
 ## Status
 
-Milestone 1 MVP flow in progress with working local planner and JSON import/export demo.
+Version 1.0.0 — practical usable release. The planner covers site inputs with validation, species mix generation, plan quality insights, scenario presets and comparison, growth simulation modes, layout preview and exports (JSON, PDF, GeoJSON, SVG), and a Year-1 maintenance checklist with progress tracking. Deployed to GitHub Pages with CI validation. Deferred to later milestones: map-based plot drawing, expanded regional species datasets, and localization.
 
 ## Next documentation
 

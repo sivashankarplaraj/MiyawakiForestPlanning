@@ -8,6 +8,7 @@ import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./li
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
 import { getPresetById, scenarioPresets } from "./lib/presets";
+import { inputLimits, sanitizePlanInput } from "./lib/validateInput";
 import type { ForestType, PlanInput } from "./types";
 
 const forestTypeOptions: Array<{ value: ForestType; label: string }> = [
@@ -32,6 +33,34 @@ const checklistStorageKey = "miyawaki-guidance-checklist-v1";
 const previewPointLimit = 1200;
 type SimulationMode = "base" | "best" | "stress";
 
+function loadSavedDraft(): PlanInput | null {
+  const savedDraft = window.localStorage.getItem(draftStorageKey);
+  if (!savedDraft) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(savedDraft) as PlanInput;
+  } catch {
+    window.localStorage.removeItem(draftStorageKey);
+    return null;
+  }
+}
+
+function loadSavedChecklist(): Record<string, boolean> {
+  const savedChecklist = window.localStorage.getItem(checklistStorageKey);
+  if (!savedChecklist) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(savedChecklist) as Record<string, boolean>;
+  } catch {
+    window.localStorage.removeItem(checklistStorageKey);
+    return {};
+  }
+}
+
 export default function App() {
   const pilotMetadata = useMemo(() => getPilotMetadata(), []);
   const plannerSpecies = useMemo(() => {
@@ -47,24 +76,28 @@ export default function App() {
     return merged;
   }, []);
 
-  const [input, setInput] = useState<PlanInput>({
-    ...defaultInput
-  });
+  const [input, setInput] = useState<PlanInput>(() => loadSavedDraft() ?? { ...defaultInput });
 
   const [generatedAt, setGeneratedAt] = useState<string>("");
-  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<string>(() =>
+    window.localStorage.getItem(draftStorageKey) ? "Restored your last local draft inputs." : ""
+  );
   const [comparePresetId, setComparePresetId] = useState<string>(scenarioPresets[0]?.id ?? "");
   const [simulationMode, setSimulationMode] = useState<SimulationMode>("base");
-  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>(() => loadSavedChecklist());
 
-  const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
-  const layoutPoints = useMemo(() => generateLayoutPoints(plan, input), [plan, input]);
+  const sanitized = useMemo(() => sanitizePlanInput(input), [input]);
+  const safeInput = sanitized.input;
+  const inputWarnings = sanitized.warnings;
+
+  const plan = useMemo(() => generatePlan(plannerSpecies, safeInput), [safeInput, plannerSpecies]);
+  const layoutPoints = useMemo(() => generateLayoutPoints(plan, safeInput), [plan, safeInput]);
   const previewPoints = useMemo(() => layoutPoints.slice(0, previewPointLimit), [layoutPoints]);
-  const layoutSideM = useMemo(() => Math.max(1, Math.sqrt(input.areaM2)), [input.areaM2]);
+  const layoutSideM = useMemo(() => Math.max(1, Math.sqrt(safeInput.areaM2)), [safeInput.areaM2]);
   const previewScale = useMemo(() => Math.max(4, 320 / layoutSideM), [layoutSideM]);
   const previewSize = useMemo(() => Math.max(160, Math.round(layoutSideM * previewScale)), [layoutSideM, previewScale]);
-  const guidance = useMemo(() => buildMaintenanceGuidance(input), [input]);
-  const insight = useMemo(() => buildPlanInsight(plan, input), [plan, input]);
+  const guidance = useMemo(() => buildMaintenanceGuidance(safeInput), [safeInput]);
+  const insight = useMemo(() => buildPlanInsight(plan, safeInput), [plan, safeInput]);
   const comparePreset = useMemo(() => getPresetById(comparePresetId), [comparePresetId]);
   const compareInput = useMemo(() => comparePreset?.input ?? defaultInput, [comparePreset]);
   const comparePlan = useMemo(() => generatePlan(plannerSpecies, compareInput), [plannerSpecies, compareInput]);
@@ -103,56 +136,15 @@ export default function App() {
   }
 
   useEffect(() => {
-    const savedDraft = window.localStorage.getItem(draftStorageKey);
-    if (!savedDraft) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(savedDraft) as PlanInput;
-      setInput(parsed);
-      setStatusMessage("Restored your last local draft inputs.");
-    } catch {
-      window.localStorage.removeItem(draftStorageKey);
-    }
-  }, []);
-
-  useEffect(() => {
     window.localStorage.setItem(draftStorageKey, JSON.stringify(input));
   }, [input]);
-
-  useEffect(() => {
-    const savedChecklist = window.localStorage.getItem(checklistStorageKey);
-    if (!savedChecklist) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(savedChecklist) as Record<string, boolean>;
-      setChecklistState(parsed);
-    } catch {
-      window.localStorage.removeItem(checklistStorageKey);
-    }
-  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(checklistStorageKey, JSON.stringify(checklistState));
   }, [checklistState]);
 
-  useEffect(() => {
-    setChecklistState((previous) => {
-      const next: Record<string, boolean> = {};
-      for (const item of guidance) {
-        if (previous[item.id]) {
-          next[item.id] = true;
-        }
-      }
-      return next;
-    });
-  }, [guidance]);
-
   function downloadPlan() {
-    const document = createPlanDocument(input, plan, pilotMetadata.region);
+    const document = createPlanDocument(safeInput, plan, pilotMetadata.region);
     const fileName = `miyawaki-plan-${new Date().toISOString().slice(0, 10)}.json`;
     const blob = new Blob([JSON.stringify(document, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -176,11 +168,11 @@ export default function App() {
     pdf.setFontSize(11);
     pdf.text(`Generated: ${now}`, 14, 26);
     pdf.text(`Region: ${pilotMetadata.region}`, 14, 32);
-    pdf.text(`Area: ${input.areaM2} m2`, 14, 38);
-    pdf.text(`Density: ${input.densityPerM2} saplings/m2`, 14, 44);
-    pdf.text(`Forest type: ${input.forestType}`, 14, 50);
-    pdf.text(`Sunlight: ${input.sunlight}`, 14, 56);
-    pdf.text(`Water: ${input.waterAvailability}`, 14, 62);
+    pdf.text(`Area: ${safeInput.areaM2} m2`, 14, 38);
+    pdf.text(`Density: ${safeInput.densityPerM2} saplings/m2`, 14, 44);
+    pdf.text(`Forest type: ${safeInput.forestType}`, 14, 50);
+    pdf.text(`Sunlight: ${safeInput.sunlight}`, 14, 56);
+    pdf.text(`Water: ${safeInput.waterAvailability}`, 14, 62);
     pdf.text(`Total saplings: ${plan.totalSaplings}`, 14, 68);
 
     let line = 78;
@@ -226,7 +218,7 @@ export default function App() {
   }
 
   function downloadLayoutGeoJson() {
-    const geojson = createLayoutGeoJson(plan, input);
+    const geojson = createLayoutGeoJson(plan, safeInput);
     const fileName = `miyawaki-layout-${new Date().toISOString().slice(0, 10)}.geojson`;
     const blob = new Blob([geojson], { type: "application/geo+json" });
     const url = URL.createObjectURL(blob);
@@ -241,7 +233,7 @@ export default function App() {
   }
 
   function downloadLayoutSvg() {
-    const svg = createLayoutSvg(plan, input);
+    const svg = createLayoutSvg(plan, safeInput);
     const fileName = `miyawaki-layout-${new Date().toISOString().slice(0, 10)}.svg`;
     const blob = new Blob([svg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
@@ -260,10 +252,10 @@ export default function App() {
       schemaVersion: "1.0.0",
       exportedAt: new Date().toISOString(),
       site: {
-        areaM2: input.areaM2,
-        forestType: input.forestType,
-        sunlight: input.sunlight,
-        waterAvailability: input.waterAvailability
+        areaM2: safeInput.areaM2,
+        forestType: safeInput.forestType,
+        sunlight: safeInput.sunlight,
+        waterAvailability: safeInput.waterAvailability
       },
       checklist: guidance.map((item) => ({
         id: item.id,
@@ -363,8 +355,8 @@ export default function App() {
             Plot Area (m2)
             <input
               type="number"
-              min={10}
-              max={5000}
+              min={inputLimits.areaM2.min}
+              max={inputLimits.areaM2.max}
               value={input.areaM2}
               onChange={(e) => setInput((prev) => ({ ...prev, areaM2: Number(e.target.value || 0) }))}
             />
@@ -374,8 +366,8 @@ export default function App() {
             Density (saplings per m2)
             <input
               type="number"
-              min={2}
-              max={5}
+              min={inputLimits.densityPerM2.min}
+              max={inputLimits.densityPerM2.max}
               step={0.5}
               value={input.densityPerM2}
               onChange={(e) => setInput((prev) => ({ ...prev, densityPerM2: Number(e.target.value || 0) }))}
@@ -452,6 +444,13 @@ export default function App() {
             <input type="file" accept="application/json" onChange={importPlan} />
           </label>
         </div>
+        {inputWarnings.length > 0 ? (
+          <div className="input-warnings" role="alert">
+            {inputWarnings.map((warning) => (
+              <p key={warning}>{warning}</p>
+            ))}
+          </div>
+        ) : null}
         {statusMessage ? <p className="status">{statusMessage}</p> : null}
       </section>
 
@@ -467,27 +466,37 @@ export default function App() {
           <strong>Last Refreshed:</strong> {generatedAt || "Not manually refreshed yet"}
         </p>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Species</th>
-              <th>Layer</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            {plan.items.map((item) => (
-              <tr key={item.species.id}>
-                <td>
-                  {item.species.commonName}
-                  <span className="sci">{item.species.scientificName}</span>
-                </td>
-                <td>{item.species.layer}</td>
-                <td>{item.count}</td>
+        {plan.items.length === 0 ? (
+          <p className="empty-plan" role="alert">
+            No species matched these site conditions. Try adjusting sunlight, water availability, or forest type.
+          </p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Species</th>
+                <th>Layer</th>
+                <th>Sunlight</th>
+                <th>Water Need</th>
+                <th>Count</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {plan.items.map((item) => (
+                <tr key={item.species.id}>
+                  <td>
+                    {item.species.commonName}
+                    <span className="sci">{item.species.scientificName}</span>
+                  </td>
+                  <td>{item.species.layer.replace("_", "-")}</td>
+                  <td>{item.species.sunlight.replace("_", " ")}</td>
+                  <td>{item.species.waterNeed}</td>
+                  <td>{item.count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <section className="card insight">
@@ -647,6 +656,21 @@ export default function App() {
           Showing {previewPoints.length} of {layoutPoints.length} points | Approximate plot side: {layoutSideM.toFixed(1)} m
         </p>
       </section>
+
+      <footer className="app-footer">
+        <p>
+          This planner supports community afforestation decisions but does not replace local ecological expertise,
+          permitting checks, or protected-species compliance. Verify species suitability with regional nurseries and
+          forestry departments before planting.
+        </p>
+        <p>
+          Open source on{" "}
+          <a href="https://github.com/sivashankarplaraj/MiyawakiForestPlanning" target="_blank" rel="noreferrer">
+            GitHub
+          </a>{" "}
+          | Pilot dataset license: {pilotMetadata.license}
+        </p>
+      </footer>
     </div>
   );
 }
