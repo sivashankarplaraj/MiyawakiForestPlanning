@@ -147,6 +147,7 @@ Milestone 1 MVP flow in progress with working local planner and JSON import/expo
 - GitHub-ready backlog: docs/GITHUB_BACKLOG.md
 - License decision matrix: docs/LICENSE_DECISION_MATRIX.md
 - Milestone 0 execution scaffold: docs/MILESTONE_0_IMPLEMENTATION_SCAFFOLD.md
+- Demo walkthrough: docs/DEMO_SCRIPT.md
 
 ## Community and security
 
