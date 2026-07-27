@@ -3,6 +3,7 @@ import type { ChangeEvent } from "react";
 import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
 import { buildMaintenanceGuidance } from "./lib/guidance";
+import { buildPlanInsight } from "./lib/insights";
 import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
@@ -58,6 +59,7 @@ export default function App() {
   const previewScale = useMemo(() => Math.max(4, 320 / layoutSideM), [layoutSideM]);
   const previewSize = useMemo(() => Math.max(160, Math.round(layoutSideM * previewScale)), [layoutSideM, previewScale]);
   const guidance = useMemo(() => buildMaintenanceGuidance(input), [input]);
+  const insight = useMemo(() => buildPlanInsight(plan, input), [plan, input]);
 
   function layerColor(layer: string): string {
     if (layer === "canopy") {
@@ -362,6 +364,28 @@ export default function App() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section className="card insight">
+        <h2>Plan Quality Snapshot</h2>
+        <div className="insight-grid">
+          <article>
+            <h3>Diversity Index</h3>
+            <p>{insight.diversityIndex}</p>
+          </article>
+          <article>
+            <h3>Water Stress Risk</h3>
+            <p className={`risk risk-${insight.waterStressRisk}`}>{insight.waterStressRisk.toUpperCase()}</p>
+          </article>
+          <article>
+            <h3>Year-10 Survival</h3>
+            <p>{insight.projectedYear10Survival}%</p>
+          </article>
+          <article>
+            <h3>Nursery Order Buffer</h3>
+            <p>{insight.recommendedNurseryOrderBufferPct}%</p>
+          </article>
+        </div>
       </section>
 
       <section className="card growth">

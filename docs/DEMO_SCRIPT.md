@@ -22,6 +22,7 @@ Expected outcome:
 - Growth preview cards show year-wise progression.
 - Year-1 maintenance guidance updates to match site conditions.
 - Layout preview shows point-based planting distribution.
+- Plan quality snapshot shows diversity, water-risk, survival, and nursery buffer hints.
 
 ## 3) Show local-first continuity
 
