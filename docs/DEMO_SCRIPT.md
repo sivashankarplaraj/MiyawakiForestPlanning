@@ -60,7 +60,16 @@ Expected outcome:
 Expected outcome:
 - Stakeholders can see that export files match the in-app visual layout model.
 
-## 7) Close with trust and governance
+## 7) Compare scenario tradeoffs
+
+1. Open `Scenario Compare`.
+2. Select `Roadside Strip` and observe deltas.
+3. Switch to `Community Fruit Grove` and compare again.
+
+Expected outcome:
+- Stakeholders can reason about saplings, survival, diversity, and nursery buffer deltas quickly.
+
+## 8) Close with trust and governance
 
 Call out:
 - Data license policy in `docs/DATA_LICENSE_POLICY.md`.

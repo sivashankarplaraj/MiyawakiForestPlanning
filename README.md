@@ -122,6 +122,7 @@ Current repository defaults:
 9. Export a printable plan summary PDF
 10. Export simple planting layout files as GeoJSON or SVG
 11. Review the in-app layout preview before exporting layout artifacts
+12. Use Scenario Compare to evaluate current plan against a preset baseline
 
 Build check:
 

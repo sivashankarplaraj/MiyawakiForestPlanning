@@ -51,6 +51,7 @@ export default function App() {
 
   const [generatedAt, setGeneratedAt] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [comparePresetId, setComparePresetId] = useState<string>(scenarioPresets[0]?.id ?? "");
 
   const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
   const layoutPoints = useMemo(() => generateLayoutPoints(plan, input), [plan, input]);
@@ -60,6 +61,10 @@ export default function App() {
   const previewSize = useMemo(() => Math.max(160, Math.round(layoutSideM * previewScale)), [layoutSideM, previewScale]);
   const guidance = useMemo(() => buildMaintenanceGuidance(input), [input]);
   const insight = useMemo(() => buildPlanInsight(plan, input), [plan, input]);
+  const comparePreset = useMemo(() => getPresetById(comparePresetId), [comparePresetId]);
+  const compareInput = useMemo(() => comparePreset?.input ?? defaultInput, [comparePreset]);
+  const comparePlan = useMemo(() => generatePlan(plannerSpecies, compareInput), [plannerSpecies, compareInput]);
+  const compareInsight = useMemo(() => buildPlanInsight(comparePlan, compareInput), [comparePlan, compareInput]);
 
   function layerColor(layer: string): string {
     if (layer === "canopy") {
@@ -384,6 +389,46 @@ export default function App() {
           <article>
             <h3>Nursery Order Buffer</h3>
             <p>{insight.recommendedNurseryOrderBufferPct}%</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="card compare">
+        <h2>Scenario Compare</h2>
+        <p>Compare your current input against a preset to quickly evaluate tradeoffs.</p>
+        <label className="compare-select">
+          Comparison preset
+          <select value={comparePresetId} onChange={(e) => setComparePresetId(e.target.value)}>
+            {scenarioPresets.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="compare-grid">
+          <article>
+            <h3>Current</h3>
+            <p>Total saplings: {plan.totalSaplings}</p>
+            <p>Year-10 survival: {insight.projectedYear10Survival}%</p>
+            <p>Water risk: {insight.waterStressRisk}</p>
+            <p>Diversity: {insight.diversityIndex}</p>
+          </article>
+          <article>
+            <h3>{comparePreset?.label ?? "Preset"}</h3>
+            <p>Total saplings: {comparePlan.totalSaplings}</p>
+            <p>Year-10 survival: {compareInsight.projectedYear10Survival}%</p>
+            <p>Water risk: {compareInsight.waterStressRisk}</p>
+            <p>Diversity: {compareInsight.diversityIndex}</p>
+          </article>
+          <article>
+            <h3>Delta (Current - Preset)</h3>
+            <p>Saplings: {plan.totalSaplings - comparePlan.totalSaplings}</p>
+            <p>Survival: {insight.projectedYear10Survival - compareInsight.projectedYear10Survival}%</p>
+            <p>Diversity: {(insight.diversityIndex - compareInsight.diversityIndex).toFixed(2)}</p>
+            <p>
+              Buffer: {insight.recommendedNurseryOrderBufferPct - compareInsight.recommendedNurseryOrderBufferPct}%
+            </p>
           </article>
         </div>
       </section>
