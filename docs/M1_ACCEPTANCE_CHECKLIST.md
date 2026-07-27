@@ -9,6 +9,7 @@
 - [x] Local load from plan JSON with input restoration
 - [x] Local draft persistence via browser storage
 - [x] Scenario compare view (current vs selected preset)
+- [x] Year-1 checklist tracking with completion progress state
 
 ## Planning outputs and explainability
 
@@ -25,6 +26,7 @@
 - [x] Summary PDF export
 - [x] Layout GeoJSON export
 - [x] Layout SVG export
+- [x] Checklist JSON export with completion flags
 
 ## Quality gates
 

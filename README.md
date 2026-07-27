@@ -124,6 +124,7 @@ Current repository defaults:
 11. Review the in-app layout preview before exporting layout artifacts
 12. Use Scenario Compare to evaluate current plan against a preset baseline
 13. Toggle Best/Base/Stress simulation modes to compare growth outcomes
+14. Track Year-1 maintenance checklist progress and export checklist JSON
 
 Build check:
 

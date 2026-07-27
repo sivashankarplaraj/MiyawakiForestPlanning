@@ -29,4 +29,16 @@ describe('App', () => {
     expect(screen.getAllByRole('heading', { name: /Scenario Compare/i })[0]).toBeInTheDocument();
     expect(screen.getAllByText(/Delta \(Current - Preset\)/i)[0]).toBeInTheDocument();
   });
+
+  it('tracks checklist completion progress', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getAllByText(/Completed 0 of/i)[0]).toBeInTheDocument();
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await user.click(checkboxes[0]);
+
+    expect(screen.getAllByText(/Completed 1 of/i)[0]).toBeInTheDocument();
+  });
 });

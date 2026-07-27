@@ -46,11 +46,13 @@ Expected outcome:
 1. Click `Export Summary PDF`.
 2. Click `Export Layout GeoJSON`.
 3. Click `Export Layout SVG`.
+4. Click `Export Checklist JSON`.
 
 Expected outcome:
 - PDF summary file downloads for sharing.
 - GeoJSON layout file downloads for GIS workflows.
 - SVG layout file downloads for visual review.
+- Checklist JSON downloads with completion status per task.
 
 ## 6) Show simulation mode switching
 
@@ -83,3 +85,12 @@ Call out:
 - Data license policy in `docs/DATA_LICENSE_POLICY.md`.
 - Schema contracts in `schemas/`.
 - Validation scripts: `npm run validate:plan` and `npm run validate:data`.
+
+## 10) Show checklist execution workflow
+
+1. Tick a few Year-1 maintenance checklist items.
+2. Confirm progress text updates (for example, `Completed 2 of 4 checklist tasks`).
+3. Export checklist JSON and mention it can be shared with field teams.
+
+Expected outcome:
+- Stakeholders see an actionable operations handoff, not just a planning report.

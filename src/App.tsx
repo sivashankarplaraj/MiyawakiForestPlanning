@@ -28,6 +28,7 @@ const defaultInput: PlanInput = {
 };
 
 const draftStorageKey = "miyawaki-plan-input-v1";
+const checklistStorageKey = "miyawaki-guidance-checklist-v1";
 const previewPointLimit = 1200;
 type SimulationMode = "base" | "best" | "stress";
 
@@ -54,6 +55,7 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [comparePresetId, setComparePresetId] = useState<string>(scenarioPresets[0]?.id ?? "");
   const [simulationMode, setSimulationMode] = useState<SimulationMode>("base");
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
 
   const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
   const layoutPoints = useMemo(() => generateLayoutPoints(plan, input), [plan, input]);
@@ -67,6 +69,10 @@ export default function App() {
   const compareInput = useMemo(() => comparePreset?.input ?? defaultInput, [comparePreset]);
   const comparePlan = useMemo(() => generatePlan(plannerSpecies, compareInput), [plannerSpecies, compareInput]);
   const compareInsight = useMemo(() => buildPlanInsight(comparePlan, compareInput), [comparePlan, compareInput]);
+  const completedGuidanceCount = useMemo(
+    () => guidance.filter((item) => checklistState[item.id]).length,
+    [guidance, checklistState]
+  );
   const adjustedGrowth = useMemo(() => {
     if (simulationMode === "base") {
       return plan.growth;
@@ -114,6 +120,36 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(draftStorageKey, JSON.stringify(input));
   }, [input]);
+
+  useEffect(() => {
+    const savedChecklist = window.localStorage.getItem(checklistStorageKey);
+    if (!savedChecklist) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(savedChecklist) as Record<string, boolean>;
+      setChecklistState(parsed);
+    } catch {
+      window.localStorage.removeItem(checklistStorageKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(checklistStorageKey, JSON.stringify(checklistState));
+  }, [checklistState]);
+
+  useEffect(() => {
+    setChecklistState((previous) => {
+      const next: Record<string, boolean> = {};
+      for (const item of guidance) {
+        if (previous[item.id]) {
+          next[item.id] = true;
+        }
+      }
+      return next;
+    });
+  }, [guidance]);
 
   function downloadPlan() {
     const document = createPlanDocument(input, plan, pilotMetadata.region);
@@ -163,6 +199,27 @@ export default function App() {
       }
     }
 
+    line += 4;
+    if (line > 272) {
+      pdf.addPage();
+      line = 16;
+    }
+
+    pdf.setFontSize(13);
+    pdf.text("Maintenance checklist", 14, line);
+    line += 8;
+    pdf.setFontSize(10);
+
+    for (const item of guidance) {
+      const mark = checklistState[item.id] ? "[x]" : "[ ]";
+      pdf.text(`${mark} ${item.title}`, 14, line);
+      line += 6;
+      if (line > 280) {
+        pdf.addPage();
+        line = 16;
+      }
+    }
+
     const fileName = `miyawaki-plan-summary-${new Date().toISOString().slice(0, 10)}.pdf`;
     pdf.save(fileName);
     setStatusMessage(`Plan summary exported as ${fileName}`);
@@ -198,6 +255,37 @@ export default function App() {
     setStatusMessage(`Layout exported as ${fileName}`);
   }
 
+  function downloadChecklistJson() {
+    const payload = {
+      schemaVersion: "1.0.0",
+      exportedAt: new Date().toISOString(),
+      site: {
+        areaM2: input.areaM2,
+        forestType: input.forestType,
+        sunlight: input.sunlight,
+        waterAvailability: input.waterAvailability
+      },
+      checklist: guidance.map((item) => ({
+        id: item.id,
+        title: item.title,
+        detail: item.detail,
+        completed: Boolean(checklistState[item.id])
+      }))
+    };
+
+    const fileName = `miyawaki-maintenance-checklist-${new Date().toISOString().slice(0, 10)}.json`;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    setStatusMessage(`Checklist exported as ${fileName}`);
+  }
+
   async function importPlan(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
@@ -221,7 +309,9 @@ export default function App() {
   function resetDraft() {
     setInput(defaultInput);
     setGeneratedAt("");
+    setChecklistState({});
     window.localStorage.removeItem(draftStorageKey);
+    window.localStorage.removeItem(checklistStorageKey);
     setStatusMessage("Draft reset to default inputs.");
   }
 
@@ -232,8 +322,16 @@ export default function App() {
     }
 
     setInput(preset.input);
+    setChecklistState({});
     setGeneratedAt(new Date().toLocaleString());
     setStatusMessage(`Preset applied: ${preset.label}`);
+  }
+
+  function toggleChecklistItem(itemId: string) {
+    setChecklistState((previous) => ({
+      ...previous,
+      [itemId]: !previous[itemId]
+    }));
   }
 
   return (
@@ -342,6 +440,9 @@ export default function App() {
           </button>
           <button className="secondary" onClick={downloadLayoutSvg}>
             Export Layout SVG
+          </button>
+          <button className="secondary" onClick={downloadChecklistJson}>
+            Export Checklist JSON
           </button>
           <button className="secondary" onClick={resetDraft}>
             Reset Inputs
@@ -487,10 +588,22 @@ export default function App() {
 
       <section className="card guidance">
         <h2>Year-1 Maintenance Guidance</h2>
+        <p className="guidance-progress">
+          Completed {completedGuidanceCount} of {guidance.length} checklist tasks
+        </p>
         <ul className="guidance-list">
           {guidance.map((item) => (
-            <li key={item.title}>
-              <strong>{item.title}:</strong> {item.detail}
+            <li key={item.id}>
+              <label className="guidance-check">
+                <input
+                  type="checkbox"
+                  checked={Boolean(checklistState[item.id])}
+                  onChange={() => toggleChecklistItem(item.id)}
+                />
+                <span>
+                  <strong>{item.title}:</strong> {item.detail}
+                </span>
+              </label>
             </li>
           ))}
         </ul>

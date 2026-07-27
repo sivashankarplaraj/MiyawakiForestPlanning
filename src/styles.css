@@ -300,6 +300,23 @@ td {
   gap: 8px;
 }
 
+.guidance-progress {
+  margin: 8px 0 0;
+  font-weight: 700;
+  color: #2f5b2f;
+}
+
+.guidance-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-weight: 400;
+}
+
+.guidance-check input[type="checkbox"] {
+  margin-top: 2px;
+}
+
 .guidance-list li {
   line-height: 1.4;
 }

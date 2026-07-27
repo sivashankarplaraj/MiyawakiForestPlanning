@@ -18,6 +18,7 @@ describe("buildMaintenanceGuidance", () => {
     const items = buildMaintenanceGuidance(makeInput({ waterAvailability: "low" }));
 
     expect(items.some((item) => item.detail.includes("2-3 times per week"))).toBe(true);
+    expect(items.some((item) => item.id === "irrigation-low-water")).toBe(true);
   });
 
   it("adds pollinator-specific guidance for pollinator forest", () => {
@@ -30,5 +31,12 @@ describe("buildMaintenanceGuidance", () => {
     const items = buildMaintenanceGuidance(makeInput({ sunlight: "shade" }));
 
     expect(items.some((item) => item.title === "Heat stress watch")).toBe(false);
+  });
+
+  it("produces unique IDs for checklist tracking", () => {
+    const items = buildMaintenanceGuidance(makeInput({ forestType: "fruit" }));
+    const ids = items.map((item) => item.id);
+
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
