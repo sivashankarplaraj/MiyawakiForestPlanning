@@ -29,6 +29,7 @@ const defaultInput: PlanInput = {
 
 const draftStorageKey = "miyawaki-plan-input-v1";
 const previewPointLimit = 1200;
+type SimulationMode = "base" | "best" | "stress";
 
 export default function App() {
   const pilotMetadata = useMemo(() => getPilotMetadata(), []);
@@ -52,6 +53,7 @@ export default function App() {
   const [generatedAt, setGeneratedAt] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [comparePresetId, setComparePresetId] = useState<string>(scenarioPresets[0]?.id ?? "");
+  const [simulationMode, setSimulationMode] = useState<SimulationMode>("base");
 
   const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
   const layoutPoints = useMemo(() => generateLayoutPoints(plan, input), [plan, input]);
@@ -65,6 +67,22 @@ export default function App() {
   const compareInput = useMemo(() => comparePreset?.input ?? defaultInput, [comparePreset]);
   const comparePlan = useMemo(() => generatePlan(plannerSpecies, compareInput), [plannerSpecies, compareInput]);
   const compareInsight = useMemo(() => buildPlanInsight(comparePlan, compareInput), [comparePlan, compareInput]);
+  const adjustedGrowth = useMemo(() => {
+    if (simulationMode === "base") {
+      return plan.growth;
+    }
+
+    const heightDelta = simulationMode === "best" ? 0.8 : -0.8;
+    const canopyDelta = simulationMode === "best" ? 8 : -12;
+    const survivalDelta = simulationMode === "best" ? 6 : -10;
+
+    return plan.growth.map((stage) => ({
+      ...stage,
+      avgHeightM: Math.max(0.5, Number((stage.avgHeightM + heightDelta).toFixed(1))),
+      canopyClosurePct: Math.max(10, Math.min(98, stage.canopyClosurePct + canopyDelta)),
+      survivalPct: Math.max(30, Math.min(99, stage.survivalPct + survivalDelta))
+    }));
+  }, [plan.growth, simulationMode]);
 
   function layerColor(layer: string): string {
     if (layer === "canopy") {
@@ -435,8 +453,28 @@ export default function App() {
 
       <section className="card growth">
         <h2>Lightweight Growth Preview</h2>
+        <div className="sim-mode-row">
+          <button
+            className={`sim-mode ${simulationMode === "best" ? "active" : ""}`}
+            onClick={() => setSimulationMode("best")}
+          >
+            Best
+          </button>
+          <button
+            className={`sim-mode ${simulationMode === "base" ? "active" : ""}`}
+            onClick={() => setSimulationMode("base")}
+          >
+            Base
+          </button>
+          <button
+            className={`sim-mode ${simulationMode === "stress" ? "active" : ""}`}
+            onClick={() => setSimulationMode("stress")}
+          >
+            Stress
+          </button>
+        </div>
         <div className="growth-grid">
-          {plan.growth.map((stage) => (
+          {adjustedGrowth.map((stage) => (
             <article key={stage.year} className="stage">
               <h3>Year {stage.year}</h3>
               <p>Avg Height: {stage.avgHeightM.toFixed(1)} m</p>

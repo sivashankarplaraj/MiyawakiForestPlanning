@@ -52,7 +52,15 @@ Expected outcome:
 - GeoJSON layout file downloads for GIS workflows.
 - SVG layout file downloads for visual review.
 
-## 6) Show visual planning confidence
+## 6) Show simulation mode switching
+
+1. In `Lightweight Growth Preview`, switch between `Best`, `Base`, and `Stress`.
+2. Highlight changes in survival and canopy closure per year.
+
+Expected outcome:
+- Stakeholders understand scenario sensitivity without backend compute.
+
+## 7) Show visual planning confidence
 
 1. Point out the in-app layout preview legend (canopy, sub-canopy, shrub).
 2. Change density and show point distribution become tighter or sparser.
@@ -60,7 +68,7 @@ Expected outcome:
 Expected outcome:
 - Stakeholders can see that export files match the in-app visual layout model.
 
-## 7) Compare scenario tradeoffs
+## 8) Compare scenario tradeoffs
 
 1. Open `Scenario Compare`.
 2. Select `Roadside Strip` and observe deltas.
@@ -69,7 +77,7 @@ Expected outcome:
 Expected outcome:
 - Stakeholders can reason about saplings, survival, diversity, and nursery buffer deltas quickly.
 
-## 8) Close with trust and governance
+## 9) Close with trust and governance
 
 Call out:
 - Data license policy in `docs/DATA_LICENSE_POLICY.md`.

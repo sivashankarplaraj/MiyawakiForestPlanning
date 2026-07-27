@@ -259,6 +259,29 @@ td {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.sim-mode-row {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-mode {
+  border: 1px solid #7da368;
+  background: #eff9e4;
+  color: #244625;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sim-mode.active {
+  background: #2f6d3e;
+  border-color: #2f6d3e;
+  color: #fff;
+}
+
 .stage {
   background: #edf8e2;
   border: 1px solid #c8deb6;

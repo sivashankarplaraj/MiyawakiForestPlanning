@@ -123,6 +123,7 @@ Current repository defaults:
 10. Export simple planting layout files as GeoJSON or SVG
 11. Review the in-app layout preview before exporting layout artifacts
 12. Use Scenario Compare to evaluate current plan against a preset baseline
+13. Toggle Best/Base/Stress simulation modes to compare growth outcomes
 
 Build check:
 
