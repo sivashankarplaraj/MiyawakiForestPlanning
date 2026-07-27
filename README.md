@@ -120,6 +120,7 @@ Current repository defaults:
 7. Export a schema-aligned plan JSON and re-load it using Load Plan JSON
 8. Export a printable plan summary PDF
 9. Export simple planting layout files as GeoJSON or SVG
+10. Review the in-app layout preview before exporting layout artifacts
 
 Build check:
 

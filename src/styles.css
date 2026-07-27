@@ -159,6 +159,60 @@ td {
   margin: 0 0 8px;
 }
 
+.layout-preview p {
+  margin: 6px 0 0;
+}
+
+.layout-legend {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2f4f2f;
+}
+
+.layout-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.dot.canopy {
+  background: #2e7d32;
+}
+
+.dot.subcanopy {
+  background: #558b2f;
+}
+
+.dot.shrub {
+  background: #8bc34a;
+}
+
+.layout-canvas {
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #c8deb6;
+  width: min(100%, 420px);
+  height: auto;
+  background: #f5fbe9;
+}
+
+.layout-meta {
+  margin-top: 8px;
+  color: #425d42;
+  font-size: 0.88rem;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 12px;

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
-import { createLayoutGeoJson, createLayoutSvg } from "./lib/layoutExport";
+import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
 import type { ForestType, PlanInput } from "./types";
@@ -25,6 +25,7 @@ const defaultInput: PlanInput = {
 };
 
 const draftStorageKey = "miyawaki-plan-input-v1";
+const previewPointLimit = 1200;
 
 export default function App() {
   const pilotMetadata = useMemo(() => getPilotMetadata(), []);
@@ -49,6 +50,23 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState<string>("");
 
   const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
+  const layoutPoints = useMemo(() => generateLayoutPoints(plan, input), [plan, input]);
+  const previewPoints = useMemo(() => layoutPoints.slice(0, previewPointLimit), [layoutPoints]);
+  const layoutSideM = useMemo(() => Math.max(1, Math.sqrt(input.areaM2)), [input.areaM2]);
+  const previewScale = useMemo(() => Math.max(4, 320 / layoutSideM), [layoutSideM]);
+  const previewSize = useMemo(() => Math.max(160, Math.round(layoutSideM * previewScale)), [layoutSideM, previewScale]);
+
+  function layerColor(layer: string): string {
+    if (layer === "canopy") {
+      return "#2e7d32";
+    }
+
+    if (layer === "sub_canopy") {
+      return "#558b2f";
+    }
+
+    return "#8bc34a";
+  }
 
   useEffect(() => {
     const savedDraft = window.localStorage.getItem(draftStorageKey);
@@ -336,6 +354,45 @@ export default function App() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="card layout-preview">
+        <h2>Layout Preview</h2>
+        <p>
+          Approximate point layout generated from area and density. This view is local-only and intended for quick
+          visual checks before export.
+        </p>
+        <div className="layout-legend">
+          <span><i className="dot canopy" />Canopy</span>
+          <span><i className="dot subcanopy" />Sub-canopy</span>
+          <span><i className="dot shrub" />Shrub</span>
+        </div>
+        <svg
+          className="layout-canvas"
+          viewBox={`0 0 ${previewSize} ${previewSize}`}
+          width={previewSize}
+          height={previewSize}
+          role="img"
+          aria-label="Layout preview"
+        >
+          <rect x="0" y="0" width={previewSize} height={previewSize} fill="#f5fbe9" stroke="#bfd8a4" />
+          {previewPoints.map((point) => (
+            <circle
+              key={point.id}
+              cx={Math.round(point.x * previewScale)}
+              cy={Math.round(point.y * previewScale)}
+              r={2.2}
+              fill={layerColor(point.layer)}
+            >
+              <title>
+                {point.speciesName} ({point.layer})
+              </title>
+            </circle>
+          ))}
+        </svg>
+        <p className="layout-meta">
+          Showing {previewPoints.length} of {layoutPoints.length} points | Approximate plot side: {layoutSideM.toFixed(1)} m
+        </p>
       </section>
     </div>
   );
