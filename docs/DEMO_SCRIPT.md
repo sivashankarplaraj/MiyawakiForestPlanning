@@ -20,6 +20,8 @@ Expected outcome:
 - Total saplings and layer split update.
 - Species allocation table updates.
 - Growth preview cards show year-wise progression.
+- Year-1 maintenance guidance updates to match site conditions.
+- Layout preview shows point-based planting distribution.
 
 ## 3) Show local-first continuity
 
@@ -49,7 +51,15 @@ Expected outcome:
 - GeoJSON layout file downloads for GIS workflows.
 - SVG layout file downloads for visual review.
 
-## 6) Close with trust and governance
+## 6) Show visual planning confidence
+
+1. Point out the in-app layout preview legend (canopy, sub-canopy, shrub).
+2. Change density and show point distribution become tighter or sparser.
+
+Expected outcome:
+- Stakeholders can see that export files match the in-app visual layout model.
+
+## 7) Close with trust and governance
 
 Call out:
 - Data license policy in `docs/DATA_LICENSE_POLICY.md`.
