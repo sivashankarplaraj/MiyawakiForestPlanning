@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
+import { createLayoutGeoJson, createLayoutSvg } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
 import type { ForestType, PlanInput } from "./types";
@@ -81,6 +82,74 @@ export default function App() {
     URL.revokeObjectURL(url);
 
     setStatusMessage(`Plan exported as ${fileName}`);
+  }
+
+  async function downloadPdfSummary() {
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF();
+    const now = new Date().toLocaleString();
+
+    pdf.setFontSize(18);
+    pdf.text("Miyawaki Forest Planner - Plan Summary", 14, 18);
+    pdf.setFontSize(11);
+    pdf.text(`Generated: ${now}`, 14, 26);
+    pdf.text(`Region: ${pilotMetadata.region}`, 14, 32);
+    pdf.text(`Area: ${input.areaM2} m2`, 14, 38);
+    pdf.text(`Density: ${input.densityPerM2} saplings/m2`, 14, 44);
+    pdf.text(`Forest type: ${input.forestType}`, 14, 50);
+    pdf.text(`Sunlight: ${input.sunlight}`, 14, 56);
+    pdf.text(`Water: ${input.waterAvailability}`, 14, 62);
+    pdf.text(`Total saplings: ${plan.totalSaplings}`, 14, 68);
+
+    let line = 78;
+    pdf.setFontSize(13);
+    pdf.text("Species allocation", 14, line);
+    line += 8;
+    pdf.setFontSize(10);
+
+    for (const item of plan.items) {
+      pdf.text(`${item.species.commonName} (${item.species.layer}) - ${item.count}`, 14, line);
+      line += 6;
+
+      if (line > 280) {
+        pdf.addPage();
+        line = 16;
+      }
+    }
+
+    const fileName = `miyawaki-plan-summary-${new Date().toISOString().slice(0, 10)}.pdf`;
+    pdf.save(fileName);
+    setStatusMessage(`Plan summary exported as ${fileName}`);
+  }
+
+  function downloadLayoutGeoJson() {
+    const geojson = createLayoutGeoJson(plan, input);
+    const fileName = `miyawaki-layout-${new Date().toISOString().slice(0, 10)}.geojson`;
+    const blob = new Blob([geojson], { type: "application/geo+json" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    setStatusMessage(`Layout exported as ${fileName}`);
+  }
+
+  function downloadLayoutSvg() {
+    const svg = createLayoutSvg(plan, input);
+    const fileName = `miyawaki-layout-${new Date().toISOString().slice(0, 10)}.svg`;
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    setStatusMessage(`Layout exported as ${fileName}`);
   }
 
   async function importPlan(event: ChangeEvent<HTMLInputElement>) {
@@ -199,6 +268,15 @@ export default function App() {
           </button>
           <button className="secondary" onClick={downloadPlan}>
             Export Plan JSON
+          </button>
+          <button className="secondary" onClick={downloadPdfSummary}>
+            Export Summary PDF
+          </button>
+          <button className="secondary" onClick={downloadLayoutGeoJson}>
+            Export Layout GeoJSON
+          </button>
+          <button className="secondary" onClick={downloadLayoutSvg}>
+            Export Layout SVG
           </button>
           <button className="secondary" onClick={resetDraft}>
             Reset Inputs

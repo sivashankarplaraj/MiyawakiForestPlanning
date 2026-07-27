@@ -118,6 +118,8 @@ Current repository defaults:
 5. Adjust area, density, forest type, sunlight, and water inputs
 6. Click Generate / Refresh Plan to demo species mix and growth preview
 7. Export a schema-aligned plan JSON and re-load it using Load Plan JSON
+8. Export a printable plan summary PDF
+9. Export simple planting layout files as GeoJSON or SVG
 
 Build check:
 
