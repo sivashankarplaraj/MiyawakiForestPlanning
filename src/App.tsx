@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
+import type { ChangeEvent } from "react";
+import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
 import { generatePlan } from "./lib/planner";
+import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
 import type { ForestType, PlanInput } from "./types";
 
 const forestTypeOptions: Array<{ value: ForestType; label: string }> = [
@@ -13,6 +16,20 @@ const forestTypeOptions: Array<{ value: ForestType; label: string }> = [
 ];
 
 export default function App() {
+  const pilotMetadata = useMemo(() => getPilotMetadata(), []);
+  const plannerSpecies = useMemo(() => {
+    const pilotSpecies = getPilotSpeciesForPlanner();
+    const merged = [...pilotSpecies];
+
+    for (const species of sampleSpecies) {
+      if (!merged.some((entry) => entry.id === species.id)) {
+        merged.push(species);
+      }
+    }
+
+    return merged;
+  }, []);
+
   const [input, setInput] = useState<PlanInput>({
     areaM2: 100,
     densityPerM2: 3,
@@ -22,8 +39,44 @@ export default function App() {
   });
 
   const [generatedAt, setGeneratedAt] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<string>("");
 
-  const plan = useMemo(() => generatePlan(sampleSpecies, input), [input]);
+  const plan = useMemo(() => generatePlan(plannerSpecies, input), [input, plannerSpecies]);
+
+  function downloadPlan() {
+    const document = createPlanDocument(input, plan, pilotMetadata.region);
+    const fileName = `miyawaki-plan-${new Date().toISOString().slice(0, 10)}.json`;
+    const blob = new Blob([JSON.stringify(document, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    setStatusMessage(`Plan exported as ${fileName}`);
+  }
+
+  async function importPlan(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const document = parsePlanDocument(text);
+
+      setInput(toInputFromPlanDocument(document));
+      setGeneratedAt(new Date().toLocaleString());
+      setStatusMessage(`Loaded plan from ${file.name}`);
+    } catch {
+      setStatusMessage("Could not load plan file. Please use a schemaVersion 1.0.0 export.");
+    } finally {
+      event.target.value = "";
+    }
+  }
 
   return (
     <div className="page">
@@ -32,6 +85,10 @@ export default function App() {
         <p>
           Static, local-first planning demo. Adjust site conditions and instantly generate a dense native
           planting plan with growth-stage preview.
+        </p>
+        <p className="pilot-note">
+          Pilot dataset: {pilotMetadata.region} | {pilotMetadata.license} | {plannerSpecies.length} species in
+          active planner catalog.
         </p>
       </header>
 
@@ -104,9 +161,19 @@ export default function App() {
           </label>
         </div>
 
-        <button className="generate" onClick={() => setGeneratedAt(new Date().toLocaleString())}>
-          Generate / Refresh Plan
-        </button>
+        <div className="action-row">
+          <button className="generate" onClick={() => setGeneratedAt(new Date().toLocaleString())}>
+            Generate / Refresh Plan
+          </button>
+          <button className="secondary" onClick={downloadPlan}>
+            Export Plan JSON
+          </button>
+          <label className="import-label">
+            Load Plan JSON
+            <input type="file" accept="application/json" onChange={importPlan} />
+          </label>
+        </div>
+        {statusMessage ? <p className="status">{statusMessage}</p> : null}
       </section>
 
       <section className="card summary">

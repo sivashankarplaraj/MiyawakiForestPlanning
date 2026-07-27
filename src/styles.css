@@ -31,6 +31,12 @@ body {
   margin: 0 0 8px;
 }
 
+.pilot-note {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: #d9f2c1;
+}
+
 .card {
   background: #f8fff1;
   border: 1px solid #c8dcb2;
@@ -72,6 +78,48 @@ select {
 
 .generate:hover {
   background: #255733;
+}
+
+.action-row {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.secondary {
+  border: 1px solid #2f6d3e;
+  background: #f5fff0;
+  color: #1f4628;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondary:hover {
+  background: #e9f9de;
+}
+
+.import-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.import-label input {
+  border: 1px solid #9db68a;
+  border-radius: 8px;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.status {
+  margin-top: 10px;
+  color: #245430;
+  font-weight: 600;
 }
 
 table {

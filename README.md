@@ -117,6 +117,7 @@ Current repository defaults:
 4. Open the local URL shown by Vite in your terminal
 5. Adjust area, density, forest type, sunlight, and water inputs
 6. Click Generate / Refresh Plan to demo species mix and growth preview
+7. Export a schema-aligned plan JSON and re-load it using Load Plan JSON
 
 Build check:
 
@@ -135,7 +136,7 @@ This tool supports planning decisions and community action, but it does not repl
 
 ## Status
 
-Planning and repository setup phase.
+Milestone 1 MVP flow in progress with working local planner and JSON import/export demo.
 
 ## Next documentation
 
