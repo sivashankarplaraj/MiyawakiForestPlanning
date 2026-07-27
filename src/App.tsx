@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { getPilotMetadata, getPilotSpeciesForPlanner } from "./data/pilotDataset";
 import { sampleSpecies } from "./data/sampleSpecies";
+import { buildMaintenanceGuidance } from "./lib/guidance";
 import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
 import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
@@ -55,6 +56,7 @@ export default function App() {
   const layoutSideM = useMemo(() => Math.max(1, Math.sqrt(input.areaM2)), [input.areaM2]);
   const previewScale = useMemo(() => Math.max(4, 320 / layoutSideM), [layoutSideM]);
   const previewSize = useMemo(() => Math.max(160, Math.round(layoutSideM * previewScale)), [layoutSideM, previewScale]);
+  const guidance = useMemo(() => buildMaintenanceGuidance(input), [input]);
 
   function layerColor(layer: string): string {
     if (layer === "canopy") {
@@ -354,6 +356,17 @@ export default function App() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="card guidance">
+        <h2>Year-1 Maintenance Guidance</h2>
+        <ul className="guidance-list">
+          {guidance.map((item) => (
+            <li key={item.title}>
+              <strong>{item.title}:</strong> {item.detail}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="card layout-preview">
