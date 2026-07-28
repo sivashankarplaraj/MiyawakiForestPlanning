@@ -53,5 +53,5 @@
 
 ## Sign-off
 
-- [ ] Milestone 1 accepted for demo and pilot testing
+- [x] Milestone 1 accepted for demo and pilot testing
 - [ ] Milestone 2 backlog finalized from demo feedback

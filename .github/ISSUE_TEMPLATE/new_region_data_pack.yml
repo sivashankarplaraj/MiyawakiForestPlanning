@@ -1,0 +1,53 @@
+name: New region data pack
+description: Propose and track a curated native-species pack for a new geography
+title: "[Data pack]: "
+body:
+  - type: input
+    id: region
+    attributes:
+      label: Region
+      description: Use an ISO 3166-2 subdivision code where available.
+      placeholder: IN-TN
+    validations:
+      required: true
+  - type: input
+    id: target-count
+    attributes:
+      label: Target species count
+      placeholder: "30"
+    validations:
+      required: true
+  - type: textarea
+    id: authoritative-sources
+    attributes:
+      label: Authoritative sources
+      description: List source names, URLs, access dates, and licenses.
+    validations:
+      required: true
+  - type: dropdown
+    id: license-reviewed
+    attributes:
+      label: License compatibility reviewed
+      options:
+        - Not yet
+        - Yes, compatible with the repository data policy
+    validations:
+      required: true
+  - type: textarea
+    id: reviewers
+    attributes:
+      label: Ecology reviewers
+      description: Name or tag reviewers with regional botanical knowledge.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Intake checklist
+      options:
+        - label: I will use the files under data/templates.
+          required: true
+        - label: Every species will include taxonomy and nativity evidence.
+          required: true
+        - label: I will run npm run validate:data before submitting.
+          required: true

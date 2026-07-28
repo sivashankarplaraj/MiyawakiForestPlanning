@@ -1,5 +1,16 @@
 # Development Roadmap
 
+## Current status (2026-07-27)
+
+| Milestone | Status | Remaining gate |
+| --- | --- | --- |
+| M0 Foundation | Complete | None |
+| M1 Core Planning MVP | Pilot-ready | Map drawing, invasive-risk UI, version migration UX |
+| M2 Simulation + Guidance | Substantially complete | Assumptions/uncertainty panel and field calibration |
+| M3 Export + Interoperability | Substantially complete | DXF beta and external viewer fixtures |
+| M4 Data Quality + Community Operations | In progress | First reviewed regional pack and completeness dashboard |
+| M5 Reliability + Adoption | Not started | Pilot feedback and adoption metrics |
+
 ## Delivery model
 
 - Sprint length: 2 weeks

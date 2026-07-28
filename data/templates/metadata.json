@@ -1,0 +1,11 @@
+{
+  "region": "REPLACE-WITH-ISO-REGION",
+  "source": "Short description of the organizations and references used",
+  "license": "REPLACE-WITH-COMPATIBLE-LICENSE",
+  "lastUpdated": "2026-07-27",
+  "datasetVersion": "0.1.0",
+  "maintainers": ["REPLACE-WITH-GITHUB-USERNAME"],
+  "reviewStatus": "draft",
+  "sourceUrls": ["https://example.org/replace-with-authoritative-source"],
+  "notes": "Replace all placeholder values before submitting a regional pack."
+}

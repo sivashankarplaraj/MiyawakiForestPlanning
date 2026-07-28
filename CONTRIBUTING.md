@@ -44,6 +44,16 @@ Every species data contribution should include:
 - Confidence rating and reviewer notes
 - License compatibility confirmation
 
+### Regional data pack workflow
+
+1. Copy `data/templates/species-contribution.csv` and collect candidate records with source URLs before editing JSON.
+2. Create `data/regions/<ISO-region-code>/metadata.json` and `species.json` using the schemas in `schemas/`.
+3. Include taxonomy and nativity evidence for every species. Site-fit and ecological-role evidence should be included when available.
+4. Start new records with `reviewStatus: "draft"`; only an ecology reviewer should promote them to `reviewed` or `approved`.
+5. Run `npm run validate:data` before opening a pull request. The validator rejects malformed records, duplicate IDs or scientific names, region mismatches, and missing curation fields.
+
+Do not place collection spreadsheets or unverified records in `data/seed`. Seed data is application-facing; `data/regions` is the reviewed expansion path.
+
 ## Ecological quality checks
 
 - Do not include known invasive species in recommendation pools

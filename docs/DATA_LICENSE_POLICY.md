@@ -31,12 +31,15 @@ Before importing any external dataset:
 
 ## Required metadata per dataset
 
-- `source_name`
-- `source_url`
-- `source_license`
-- `imported_at`
-- `transformation_notes`
-- `maintainer`
+- `region`
+- `source`
+- `sourceUrls`
+- `license`
+- `lastUpdated`
+- `datasetVersion`
+- `maintainers`
+- `reviewStatus`
+- transformation details in `notes` when source records were changed
 
 ## Attribution requirements
 
@@ -52,10 +55,12 @@ Do not merge external data files into main branches without license compatibilit
 
 ## Pilot region metadata contract
 
-For `data/seed/pilot-region/metadata.json`, include:
+For seed and regional pack `metadata.json` files, include:
 
 - `region`
 - `source`
 - `license`
 - `lastUpdated`
-- optional `notes`
+- optional `datasetVersion`, `maintainers`, `reviewStatus`, `sourceUrls`, and `notes` for legacy seed packs
+
+All new packs under `data/regions` must include `sourceUrls` and `reviewStatus`. Every species record in a regional pack must include structured taxonomy and nativity evidence, a confidence rating, and review status.

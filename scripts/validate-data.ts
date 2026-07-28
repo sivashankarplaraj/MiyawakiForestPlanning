@@ -8,8 +8,8 @@ const speciesSchemaPath = path.join(root, 'schemas', 'species.schema.json');
 const metadataSchemaPath = path.join(root, 'schemas', 'dataset-metadata.schema.json');
 
 const speciesFixturePath = path.join(root, 'tests', 'fixtures', 'species-minimal-valid.json');
-const speciesSeedPath = path.join(root, 'data', 'seed', 'pilot-region', 'species.json');
-const metadataPath = path.join(root, 'data', 'seed', 'pilot-region', 'metadata.json');
+const seedRoot = path.join(root, 'data', 'seed');
+const regionsRoot = path.join(root, 'data', 'regions');
 
 const ajv = new Ajv2020({ allErrors: true });
 addFormats(ajv);
@@ -20,32 +20,114 @@ const metadataSchema = JSON.parse(fs.readFileSync(metadataSchemaPath, 'utf8'));
 const validateSpecies = ajv.compile(speciesSchema);
 const validateMetadata = ajv.compile(metadataSchema);
 
-const speciesFixture = JSON.parse(fs.readFileSync(speciesFixturePath, 'utf8'));
-const speciesSeed = JSON.parse(fs.readFileSync(speciesSeedPath, 'utf8'));
-const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-
 let failed = false;
 
-for (const [name, item] of [
-  ['species fixture', speciesFixture],
-  ['species seed', speciesSeed],
-] as const) {
-  const arr = Array.isArray(item) ? item : [item];
-  for (const entry of arr) {
-    const ok = validateSpecies(entry);
-    if (!ok) {
-      failed = true;
-      console.error(`${name} invalid:`);
-      console.error(validateSpecies.errors);
-    }
+function readJson(filePath: string): unknown {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function report(message: string, details?: unknown): void {
+  failed = true;
+  console.error(message);
+  if (details) {
+    console.error(details);
   }
 }
 
-const metadataOk = validateMetadata(metadata);
-if (!metadataOk) {
-  failed = true;
-  console.error('dataset metadata invalid:');
-  console.error(validateMetadata.errors);
+function validateSpeciesEntries(name: string, value: unknown, requireCuration: boolean, region?: string): void {
+  if (!Array.isArray(value)) {
+    report(`${name}: species.json must contain an array.`);
+    return;
+  }
+
+  const ids = new Set<string>();
+  const scientificNames = new Set<string>();
+
+  for (const entry of value) {
+    if (!validateSpecies(entry)) {
+      report(`${name}: species record is invalid.`, validateSpecies.errors);
+      continue;
+    }
+
+    const record = entry as {
+      id: string;
+      scientificName: string;
+      nativeRegions: string[];
+      evidence?: Array<{ claim: string }>;
+      confidence?: string;
+      reviewStatus?: string;
+    };
+    const normalizedScientificName = record.scientificName.toLocaleLowerCase();
+
+    if (ids.has(record.id)) {
+      report(`${name}: duplicate species id "${record.id}".`);
+    }
+    if (scientificNames.has(normalizedScientificName)) {
+      report(`${name}: duplicate scientific name "${record.scientificName}".`);
+    }
+    if (region && !record.nativeRegions.includes(region)) {
+      report(`${name}: ${record.id} does not include pack region "${region}" in nativeRegions.`);
+    }
+
+    if (requireCuration) {
+      const claims = new Set(record.evidence?.map((item) => item.claim));
+      if (!claims.has('taxonomy') || !claims.has('nativity')) {
+        report(`${name}: ${record.id} requires taxonomy and nativity evidence.`);
+      }
+      if (!record.confidence || !record.reviewStatus) {
+        report(`${name}: ${record.id} requires confidence and reviewStatus.`);
+      }
+    }
+
+    ids.add(record.id);
+    scientificNames.add(normalizedScientificName);
+  }
+}
+
+function validatePack(directory: string, requireCuration: boolean): void {
+  const name = path.relative(root, directory);
+  const metadataPath = path.join(directory, 'metadata.json');
+  const speciesPath = path.join(directory, 'species.json');
+
+  if (!fs.existsSync(metadataPath) || !fs.existsSync(speciesPath)) {
+    report(`${name}: each data pack requires metadata.json and species.json.`);
+    return;
+  }
+
+  const metadata = readJson(metadataPath);
+  if (!validateMetadata(metadata)) {
+    report(`${name}: dataset metadata is invalid.`, validateMetadata.errors);
+    return;
+  }
+
+  const typedMetadata = metadata as { region: string; sourceUrls?: string[]; reviewStatus?: string };
+  if (requireCuration && (!typedMetadata.sourceUrls?.length || !typedMetadata.reviewStatus)) {
+    report(`${name}: regional packs require sourceUrls and reviewStatus metadata.`);
+  }
+
+  validateSpeciesEntries(name, readJson(speciesPath), requireCuration, typedMetadata.region);
+  console.log(`${name}: checked`);
+}
+
+function packDirectories(parent: string): string[] {
+  if (!fs.existsSync(parent)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(parent, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('_'))
+    .map((entry) => path.join(parent, entry.name));
+}
+
+validateSpeciesEntries('species fixture', [readJson(speciesFixturePath)], false);
+
+for (const directory of packDirectories(seedRoot)) {
+  validatePack(directory, false);
+}
+
+for (const directory of packDirectories(regionsRoot)) {
+  validatePack(directory, true);
 }
 
 if (failed) {
