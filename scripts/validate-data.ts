@@ -17,6 +17,15 @@ addFormats(ajv);
 const speciesSchema = JSON.parse(fs.readFileSync(speciesSchemaPath, 'utf8'));
 const metadataSchema = JSON.parse(fs.readFileSync(metadataSchemaPath, 'utf8'));
 
+interface ValidationSummary {
+  packName: string;
+  speciesCount: number;
+  reviewedCount: number;
+  draftCount: number;
+  evidenceCoverage: number;
+  missingEvidence: string[];
+}
+
 const validateSpecies = ajv.compile(speciesSchema);
 const validateMetadata = ajv.compile(metadataSchema);
 
@@ -34,7 +43,15 @@ function report(message: string, details?: unknown): void {
   }
 }
 
-function validateSpeciesEntries(name: string, value: unknown, requireCuration: boolean, region?: string): void {
+function validateSpeciesEntries(name: string, value: unknown, requireCuration: boolean, region?: string): ValidationSummary {
+  const summary: ValidationSummary = {
+    packName: name,
+    speciesCount: 0,
+    reviewedCount: 0,
+    draftCount: 0,
+    evidenceCoverage: 0,
+    missingEvidence: []
+  };
   if (!Array.isArray(value)) {
     report(`${name}: species.json must contain an array.`);
     return;
@@ -44,6 +61,7 @@ function validateSpeciesEntries(name: string, value: unknown, requireCuration: b
   const scientificNames = new Set<string>();
 
   for (const entry of value) {
+    summary.speciesCount += 1;
     if (!validateSpecies(entry)) {
       report(`${name}: species record is invalid.`, validateSpecies.errors);
       continue;
@@ -69,6 +87,12 @@ function validateSpeciesEntries(name: string, value: unknown, requireCuration: b
       report(`${name}: ${record.id} does not include pack region "${region}" in nativeRegions.`);
     }
 
+    if (record.reviewStatus === 'reviewed' || record.reviewStatus === 'approved') {
+      summary.reviewedCount += 1;
+    } else {
+      summary.draftCount += 1;
+    }
+
     if (requireCuration) {
       const claims = new Set(record.evidence?.map((item) => item.claim));
       if (!claims.has('taxonomy') || !claims.has('nativity')) {
@@ -77,11 +101,25 @@ function validateSpeciesEntries(name: string, value: unknown, requireCuration: b
       if (!record.confidence || !record.reviewStatus) {
         report(`${name}: ${record.id} requires confidence and reviewStatus.`);
       }
+
+      const requiredClaims = ['taxonomy', 'nativity', 'site-fit', 'ecological-role', 'invasive-risk'];
+      const missing = requiredClaims.filter((claim) => !claims.has(claim));
+      if (missing.length > 0) {
+        summary.missingEvidence.push(`${record.id}:${missing.join(',')}`);
+      }
     }
 
     ids.add(record.id);
     scientificNames.add(normalizedScientificName);
   }
+
+  if (summary.speciesCount > 0) {
+    summary.evidenceCoverage = Math.round(
+      ((summary.speciesCount - summary.missingEvidence.length) / summary.speciesCount) * 100
+    );
+  }
+
+  return summary;
 }
 
 function validatePack(directory: string, requireCuration: boolean): void {
@@ -105,8 +143,14 @@ function validatePack(directory: string, requireCuration: boolean): void {
     report(`${name}: regional packs require sourceUrls and reviewStatus metadata.`);
   }
 
-  validateSpeciesEntries(name, readJson(speciesPath), requireCuration, typedMetadata.region);
-  console.log(`${name}: checked`);
+  const summary = validateSpeciesEntries(name, readJson(speciesPath), requireCuration, typedMetadata.region);
+  if (requireCuration) {
+    console.log(
+      `${name}: checked (${summary.speciesCount} species, ${summary.reviewedCount} reviewed, ${summary.draftCount} draft, ${summary.evidenceCoverage}% evidence coverage)`
+    );
+  } else {
+    console.log(`${name}: checked`);
+  }
 }
 
 function packDirectories(parent: string): string[] {
