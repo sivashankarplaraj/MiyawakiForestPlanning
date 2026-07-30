@@ -89,6 +89,7 @@ A regional pack should also include:
 - sourceUrls
 - reviewStatus
 - region metadata
+- explicit license metadata such as CC-BY-4.0 or CC-BY-SA-4.0
 
 ## 7. Validation
 

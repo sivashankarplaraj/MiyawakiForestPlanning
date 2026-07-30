@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { validateProvenanceMetadata } from '../src/lib/dataValidation';
 
 const root = process.cwd();
 const speciesSchemaPath = path.join(root, 'schemas', 'species.schema.json');
@@ -138,7 +139,11 @@ function validatePack(directory: string, requireCuration: boolean): void {
     return;
   }
 
-  const typedMetadata = metadata as { region: string; sourceUrls?: string[]; reviewStatus?: string };
+  const typedMetadata = metadata as { region: string; source: string; license: string; lastUpdated: string; sourceUrls?: string[]; reviewStatus?: string };
+  const provenanceResult = validateProvenanceMetadata(typedMetadata);
+  if (requireCuration && !provenanceResult.ok) {
+    report(`${name}: provenance metadata is invalid.`, provenanceResult.issues);
+  }
   if (requireCuration && (!typedMetadata.sourceUrls?.length || !typedMetadata.reviewStatus)) {
     report(`${name}: regional packs require sourceUrls and reviewStatus metadata.`);
   }
