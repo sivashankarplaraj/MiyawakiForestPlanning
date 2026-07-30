@@ -1,0 +1,96 @@
+[
+  {
+    "id": "quercus-robur",
+    "commonName": "English oak",
+    "scientificName": "Quercus robur",
+    "nativeRegions": ["UK"],
+    "forestLayers": ["canopy"],
+    "siteFit": {
+      "sunlight": "full",
+      "water": "medium"
+    },
+    "ecologicalRoles": ["shade", "wildlife-support"],
+    "isInvasiveRisk": false,
+    "evidence": [
+      {
+        "claim": "taxonomy",
+        "sourceUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:323190-2",
+        "accessedOn": "2026-07-30",
+        "citation": "Plants of the World Online entry for Quercus robur"
+      },
+      {
+        "claim": "nativity",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/quercus-robur",
+        "accessedOn": "2026-07-30",
+        "citation": "BSBI Online Atlas entry for Quercus robur"
+      },
+      {
+        "claim": "site-fit",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/quercus-robur",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas ecological suitability notes"
+      },
+      {
+        "claim": "ecological-role",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/quercus-robur",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas notes on wildlife value"
+      },
+      {
+        "claim": "invasive-risk",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/quercus-robur",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas indicates no invasive concern"
+      }
+    ],
+    "confidence": "medium",
+    "reviewStatus": "draft"
+  },
+  {
+    "id": "crataegus-monogyna",
+    "commonName": "Hawthorn",
+    "scientificName": "Crataegus monogyna",
+    "nativeRegions": ["UK"],
+    "forestLayers": ["subcanopy"],
+    "siteFit": {
+      "sunlight": "full",
+      "water": "medium"
+    },
+    "ecologicalRoles": ["pollinator-support", "wildlife-support"],
+    "isInvasiveRisk": false,
+    "evidence": [
+      {
+        "claim": "taxonomy",
+        "sourceUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:723530-1",
+        "accessedOn": "2026-07-30",
+        "citation": "Plants of the World Online entry for Crataegus monogyna"
+      },
+      {
+        "claim": "nativity",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/crataegus-monogyna",
+        "accessedOn": "2026-07-30",
+        "citation": "BSBI Online Atlas entry for Crataegus monogyna"
+      },
+      {
+        "claim": "site-fit",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/crataegus-monogyna",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas ecological suitability notes"
+      },
+      {
+        "claim": "ecological-role",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/crataegus-monogyna",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas notes on pollinator and wildlife value"
+      },
+      {
+        "claim": "invasive-risk",
+        "sourceUrl": "https://www.brc.ac.uk/plantatlas/plant/crataegus-monogyna",
+        "accessedOn": "2026-07-30",
+        "citation": "Plant Atlas indicates no invasive concern"
+      }
+    ],
+    "confidence": "medium",
+    "reviewStatus": "draft"
+  }
+]

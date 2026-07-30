@@ -1,0 +1,14 @@
+{
+  "region": "UK",
+  "source": "Draft UK native species collection for contributor onboarding",
+  "sourceUrls": [
+    "https://www.brc.ac.uk/plantatlas/",
+    "https://powo.science.kew.org/"
+  ],
+  "license": "CC-BY-4.0",
+  "lastUpdated": "2026-07-30",
+  "datasetVersion": "0.1.0",
+  "maintainers": ["community-contributors"],
+  "reviewStatus": "draft",
+  "notes": "Initial UK starter pack with placeholder records to support early collection and review."
+}

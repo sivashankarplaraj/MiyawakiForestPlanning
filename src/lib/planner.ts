@@ -9,6 +9,10 @@ const layerWeights: Record<CanopyLayer, number> = {
 function scoreSpecies(species: Species, input: PlanInput): number {
   let score = 0;
 
+  if (input.excludeInvasiveRisk && species.isInvasiveRisk) {
+    return -Infinity;
+  }
+
   if (species.tags.includes(input.forestType)) {
     score += 3;
   }
@@ -35,7 +39,7 @@ function scoreSpecies(species: Species, input: PlanInput): number {
 export function generatePlan(speciesList: Species[], input: PlanInput): ForestPlan {
   const filtered = speciesList
     .map((species) => ({ species, score: scoreSpecies(species, input) }))
-    .filter((entry) => entry.score >= 2)
+    .filter((entry) => Number.isFinite(entry.score) && entry.score >= 2)
     .sort((a, b) => b.score - a.score)
     .map((entry) => entry.species);
 

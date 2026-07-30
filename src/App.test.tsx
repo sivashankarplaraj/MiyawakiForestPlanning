@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import App from './App';
@@ -34,11 +34,14 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getAllByText(/Completed 0 of/i)[0]).toBeInTheDocument();
+    const guidanceHeadings = screen.getAllByRole('heading', { name: /Year-1 Maintenance Guidance/i });
+    const guidanceSection = guidanceHeadings[0]?.closest('section');
 
-    const checkboxes = screen.getAllByRole('checkbox');
+    expect(within(guidanceSection as HTMLElement).getByText(/Completed 0 of/i)).toBeInTheDocument();
+
+    const checkboxes = within(guidanceSection as HTMLElement).getAllByRole('checkbox');
     await user.click(checkboxes[0]);
 
-    expect(screen.getAllByText(/Completed 1 of/i)[0]).toBeInTheDocument();
+    expect(within(guidanceSection as HTMLElement).getByText(/Completed 1 of/i)).toBeInTheDocument();
   });
 });

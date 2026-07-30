@@ -18,6 +18,7 @@ export interface Species {
   sunlight: "full_sun" | "partial_shade" | "shade";
   waterNeed: "low" | "medium" | "high";
   tags: ForestType[];
+  isInvasiveRisk?: boolean;
 }
 
 export interface PlanInput {
@@ -26,6 +27,7 @@ export interface PlanInput {
   forestType: ForestType;
   sunlight: "full_sun" | "partial_shade" | "shade";
   waterAvailability: "low" | "medium" | "high";
+  excludeInvasiveRisk?: boolean;
 }
 
 export interface PlanItem {

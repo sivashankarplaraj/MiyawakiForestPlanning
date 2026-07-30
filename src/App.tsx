@@ -6,7 +6,7 @@ import { buildMaintenanceGuidance } from "./lib/guidance";
 import { buildPlanInsight } from "./lib/insights";
 import { createLayoutGeoJson, createLayoutSvg, generateLayoutPoints } from "./lib/layoutExport";
 import { generatePlan } from "./lib/planner";
-import { createPlanDocument, parsePlanDocument, toInputFromPlanDocument } from "./lib/planDocument";
+import { createPlanDocument, parsePlanDocumentWithWarnings, toInputFromPlanDocument } from "./lib/planDocument";
 import { getPresetById, scenarioPresets } from "./lib/presets";
 import { inputLimits, sanitizePlanInput } from "./lib/validateInput";
 import type { ForestType, PlanInput } from "./types";
@@ -25,7 +25,8 @@ const defaultInput: PlanInput = {
   densityPerM2: 3,
   forestType: "mixed",
   sunlight: "full_sun",
-  waterAvailability: "medium"
+  waterAvailability: "medium",
+  excludeInvasiveRisk: true
 };
 
 const draftStorageKey = "miyawaki-plan-input-v1";
@@ -286,11 +287,11 @@ export default function App() {
 
     try {
       const text = await file.text();
-      const document = parsePlanDocument(text);
+      const result = parsePlanDocumentWithWarnings(text);
 
-      setInput(toInputFromPlanDocument(document));
+      setInput(toInputFromPlanDocument(result.document));
       setGeneratedAt(new Date().toLocaleString());
-      setStatusMessage(`Loaded plan from ${file.name}`);
+      setStatusMessage(result.migrated ? `Loaded plan from ${file.name} (${result.warnings[0]})` : `Loaded plan from ${file.name}`);
     } catch {
       setStatusMessage("Could not load plan file. Please use a schemaVersion 1.0.0 export.");
     } finally {
@@ -415,6 +416,15 @@ export default function App() {
               <option value="high">High</option>
             </select>
           </label>
+
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={Boolean(input.excludeInvasiveRisk)}
+              onChange={(e) => setInput((prev) => ({ ...prev, excludeInvasiveRisk: e.target.checked }))}
+            />
+            Exclude species flagged as invasive risk
+          </label>
         </div>
 
         <div className="action-row">
@@ -464,6 +474,9 @@ export default function App() {
         </p>
         <p>
           <strong>Last Refreshed:</strong> {generatedAt || "Not manually refreshed yet"}
+        </p>
+        <p>
+          <strong>Invasive-risk filter:</strong> {input.excludeInvasiveRisk ? "Enabled" : "Disabled"}
         </p>
 
         {plan.items.length === 0 ? (
